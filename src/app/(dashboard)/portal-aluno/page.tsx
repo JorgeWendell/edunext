@@ -16,6 +16,7 @@ import { AttendanceList } from "./components/attendance-list";
 import { GradesList } from "./components/grades-list";
 import { InvoicesList } from "./components/invoices-list";
 import { CalendarView } from "./components/calendar-view";
+import { LogoutButton } from "./components/logout-button";
 
 async function StudentInfo() {
   const session = await auth.api.getSession({
@@ -23,14 +24,19 @@ async function StudentInfo() {
   });
 
   return (
-    <div className="mb-6 flex items-center gap-4">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-        <User className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+    <div className="mb-6 flex items-center justify-between gap-4">
+      <div className="flex items-center gap-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+          <User className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">{session?.user?.name}</h1>
+          <p className="text-muted-foreground text-sm">
+            {session?.user?.email}
+          </p>
+        </div>
       </div>
-      <div>
-        <h1 className="text-2xl font-bold">{session?.user?.name}</h1>
-        <p className="text-muted-foreground text-sm">{session?.user?.email}</p>
-      </div>
+      <LogoutButton />
     </div>
   );
 }

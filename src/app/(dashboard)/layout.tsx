@@ -33,9 +33,12 @@ export default async function DashboardLayout({
     role: user.length > 0 ? user[0].role : undefined,
   };
 
-  // Se for aluno, renderizar apenas o conteúdo (sem sidebar/topbar do dashboard)
-  // O layout do portal-aluno já cuida do layout próprio
-  if (user.length > 0 && user[0].role === "student") {
+  // Se for aluno ou professor, renderizar apenas o conteúdo (sem sidebar/topbar do dashboard)
+  // Os layouts dos portais já cuidam do layout próprio
+  if (
+    user.length > 0 &&
+    (user[0].role === "student" || user[0].role === "teacher")
+  ) {
     return <>{children}</>;
   }
 

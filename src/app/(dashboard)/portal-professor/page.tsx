@@ -15,6 +15,7 @@ import { CoursesList } from "./components/courses-list";
 import { AttendanceSheet } from "./components/attendance-sheet";
 import { GradesManagement } from "./components/grades-management";
 import { AssignmentsManagement } from "./components/assignments-management";
+import { LogoutButton } from "./components/logout-button";
 
 async function TeacherInfo() {
   const session = await auth.api.getSession({
@@ -22,14 +23,19 @@ async function TeacherInfo() {
   });
 
   return (
-    <div className="mb-6 flex items-center gap-4">
-      <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-        <User className="h-8 w-8 text-green-600 dark:text-green-400" />
+    <div className="mb-6 flex items-center justify-between gap-4">
+      <div className="flex items-center gap-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+          <User className="h-8 w-8 text-green-600 dark:text-green-400" />
+        </div>
+        <div>
+          <h1 className="text-2xl font-bold">{session?.user?.name}</h1>
+          <p className="text-muted-foreground text-sm">
+            {session?.user?.email}
+          </p>
+        </div>
       </div>
-      <div>
-        <h1 className="text-2xl font-bold">{session?.user?.name}</h1>
-        <p className="text-muted-foreground text-sm">{session?.user?.email}</p>
-      </div>
+      <LogoutButton />
     </div>
   );
 }

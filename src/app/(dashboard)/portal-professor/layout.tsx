@@ -2,7 +2,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/db/index";
-import { teachersTable } from "@/db/schema";
+import { usersTable } from "@/db/schema";
 import { eq } from "drizzle-orm";
 
 export default async function PortalProfessorLayout({
@@ -18,13 +18,15 @@ export default async function PortalProfessorLayout({
     redirect("/authentication");
   }
 
-  const teacher = await db
+  // Verificar o role do usuário primeiro
+  const user = await db
     .select()
-    .from(teachersTable)
-    .where(eq(teachersTable.userId, session.user.id))
+    .from(usersTable)
+    .where(eq(usersTable.id, session.user.id))
     .limit(1);
 
-  if (teacher.length === 0) {
+  // Se não for teacher, não pode acessar o portal-professor
+  if (user.length === 0 || user[0].role !== "teacher") {
     redirect("/dashboard");
   }
 

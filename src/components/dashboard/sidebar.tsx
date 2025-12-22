@@ -48,7 +48,7 @@ const allNavItems: NavItem[] = [
     href: "/dashboard",
     icon: LayoutDashboard,
     color: "text-blue-600",
-    roles: ["admin", "teacher"],
+    roles: ["admin"],
   },
   {
     title: "Alunos",

@@ -27,8 +27,12 @@ export default async function DashboardPage() {
       .where(eq(usersTable.id, session.user.id))
       .limit(1);
 
-    if (user.length > 0 && user[0].role === "student") {
-      redirect("/portal-aluno");
+    if (user.length > 0) {
+      if (user[0].role === "student") {
+        redirect("/portal-aluno");
+      } else if (user[0].role === "teacher") {
+        redirect("/portal-professor");
+      }
     }
   }
   const stats = [
