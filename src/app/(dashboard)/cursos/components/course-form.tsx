@@ -5,8 +5,9 @@ import { CalendarIcon, Loader2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { PatternFormat } from "react-number-format";
+import { PatternFormat, NumericFormat } from "react-number-format";
 import z from "zod";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -48,6 +49,29 @@ const courseFormSchema = z.object({
   status: z.enum(["active", "inactive", "completed"]).default("active"),
 });
 
+// Função para gerar código do curso
+function generateCourseCode(name: string): string {
+  // Remove acentos e caracteres especiais, converte para maiúsculas
+  const normalizedName = name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z]/g, "")
+    .toUpperCase();
+
+  // Pega as 3 primeiras letras
+  const firstThree = normalizedName.substring(0, 3).padEnd(3, "X");
+
+  // Gera 2 dígitos aleatórios
+  const randomDigits = Math.floor(Math.random() * 100)
+    .toString()
+    .padStart(2, "0");
+
+  // Pega os 2 últimos dígitos do ano atual
+  const year = new Date().getFullYear().toString().slice(-2);
+
+  return `${firstThree}-${randomDigits}${year}`;
+}
+
 type CourseFormValues = z.infer<typeof courseFormSchema>;
 
 interface CourseFormProps {
@@ -85,6 +109,15 @@ export function CourseForm({
       status: defaultValues?.status || "active",
     },
   });
+
+  // Gerar código automaticamente quando o nome mudar (apenas em criação)
+  const courseName = form.watch("name");
+  useEffect(() => {
+    if (!isEdit && courseName && courseName.length >= 3) {
+      const generatedCode = generateCourseCode(courseName);
+      form.setValue("code", generatedCode);
+    }
+  }, [courseName, isEdit, form]);
 
   async function handleSubmit(values: CourseFormValues) {
     const submitValues = {
@@ -130,9 +163,19 @@ export function CourseForm({
                 <FormItem>
                   <FormLabel>Código do Curso *</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Ex: MAT-001" />
+                    <Input
+                      {...field}
+                      placeholder="Ex: PRO-8525"
+                      disabled={true}
+                      className="bg-muted cursor-not-allowed"
+                    />
                   </FormControl>
                   <FormMessage />
+                  <p className="text-muted-foreground text-xs">
+                    {isEdit
+                      ? "Código não pode ser alterado"
+                      : "Código gerado automaticamente"}
+                  </p>
                 </FormItem>
               )}
             />
@@ -140,23 +183,45 @@ export function CourseForm({
             <FormField
               control={form.control}
               name="price"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Preço *</FormLabel>
-                  <FormControl>
-                    <PatternFormat
-                      format="R$ #,##0.00"
-                      allowEmptyFormatting
-                      mask="_"
-                      value={field.value || undefined}
-                      onValueChange={(values) => field.onChange(values.value)}
-                      customInput={Input}
-                      placeholder="R$ 0,00"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              render={({ field }) => {
+                // Converte o valor do campo para número (se estiver em formato string com vírgula)
+                const numericValue = field.value
+                  ? parseFloat(
+                      field.value.replace(/[R$\s.]/g, "").replace(",", "."),
+                    )
+                  : undefined;
+
+                return (
+                  <FormItem>
+                    <FormLabel>Preço *</FormLabel>
+                    <FormControl>
+                      <NumericFormat
+                        thousandSeparator="."
+                        decimalSeparator=","
+                        decimalScale={2}
+                        fixedDecimalScale
+                        prefix="R$ "
+                        allowNegative={false}
+                        value={numericValue}
+                        onValueChange={(values) => {
+                          // Salva o valor formatado: XXX,XX (sem pontos de milhar no valor salvo)
+                          if (values.floatValue !== undefined) {
+                            const formatted = values.floatValue
+                              .toFixed(2)
+                              .replace(".", ",");
+                            field.onChange(formatted);
+                          } else {
+                            field.onChange("");
+                          }
+                        }}
+                        customInput={Input}
+                        placeholder="R$ 0,00"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
             />
 
             <FormField

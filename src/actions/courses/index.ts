@@ -45,8 +45,12 @@ export const createCourse = actionClient
       throw new Error("Código do curso já cadastrado");
     }
 
+    // Converter preço: remove R$ e espaços, substitui vírgula por ponto
     const priceValue = parsedInput.price
-      ? parsedInput.price.replace(/[^\d,.-]/g, "").replace(",", ".")
+      ? parsedInput.price
+          .replace(/[R$\s]/g, "")
+          .replace(/\./g, "")
+          .replace(",", ".")
       : "0";
 
     await db.insert(coursesTable).values({
@@ -93,27 +97,24 @@ export const updateCourse = actionClient
 
     const course = courseResult[0];
 
+    // Não permitir alteração do código do curso
     if (parsedInput.code && parsedInput.code !== course.code) {
-      const existingCode = await db
-        .select()
-        .from(coursesTable)
-        .where(eq(coursesTable.code, parsedInput.code))
-        .limit(1);
-
-      if (existingCode.length > 0) {
-        throw new Error("Código do curso já cadastrado");
-      }
+      throw new Error("O código do curso não pode ser alterado");
     }
 
+    // Converter preço: remove R$ e espaços, substitui vírgula por ponto
     const priceValue = parsedInput.price
-      ? parsedInput.price.replace(/[^\d,.-]/g, "").replace(",", ".")
+      ? parsedInput.price
+          .replace(/[R$\s]/g, "")
+          .replace(/\./g, "")
+          .replace(",", ".")
       : undefined;
 
     await db
       .update(coursesTable)
       .set({
         ...(parsedInput.name && { name: parsedInput.name }),
-        ...(parsedInput.code && { code: parsedInput.code }),
+        // Código não pode ser alterado - sempre usar o código existente
         ...(parsedInput.description !== undefined && {
           description: parsedInput.description,
         }),
