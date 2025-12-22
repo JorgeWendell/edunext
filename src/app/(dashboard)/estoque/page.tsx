@@ -1,0 +1,49 @@
+import { Package } from "lucide-react";
+import { Suspense } from "react";
+
+import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import { getMaterials } from "@/actions/materials";
+import { MaterialsTable } from "./components/materials-table";
+
+async function MaterialsList() {
+  const materials = await getMaterials();
+
+  return <MaterialsTable materials={materials} />;
+}
+
+export default function EstoquePage() {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gray-100 dark:bg-gray-900/30">
+              <Package className="h-7 w-7 text-gray-600 dark:text-gray-400" />
+            </div>
+            <span>Estoque</span>
+          </h1>
+          <p className="text-muted-foreground mt-2 text-base">
+            Gerencie o estoque de materiais da instituição
+          </p>
+        </div>
+      </div>
+
+      <Card className="border-0 shadow-lg">
+        <CardContent className="p-6">
+          <Suspense
+            fallback={
+              <div className="space-y-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-64 w-full" />
+              </div>
+            }
+          >
+            <MaterialsList />
+          </Suspense>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
